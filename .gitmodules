@@ -1,0 +1,3 @@
+[submodule "rl-tournament-starter"]
+	path = rl-tournament-starter
+	url = git@github.com:dlb-rl/rl-tournament-starter.git
