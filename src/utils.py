@@ -1,7 +1,9 @@
 import gym
 from ray.rllib import MultiAgentEnv
 import soccer_twos
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from src.experiments.ppo_multiagent.wrapper import CustomRewardWrapper
 
 class RLLibWrapper(gym.core.Wrapper, MultiAgentEnv):
     """
@@ -30,3 +32,8 @@ def create_rllib_env(env_config: dict = {}):
         # is multiagent by default, is only disabled if explicitly set to False
         return env
     return RLLibWrapper(env)
+
+
+def create_custom_env(env_config: dict = {}):
+    env = create_rllib_env(env_config)
+    return CustomRewardWrapper(env)
