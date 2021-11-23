@@ -3,7 +3,8 @@ from soccer_twos import EnvType
 from ray import tune
 from src.experiments.ppo_multiagent.callback import Callback
 
-NUM_ENVS_PER_WORKER = 4
+NUM_ENVS_PER_WORKER = 1
+# NUM_ENVS_PER_WORKER = 4
 ENVIRONMENT_ID = "Soccer"
 
 ENVIRONMENT_CONFIG = {
@@ -21,7 +22,8 @@ temp_env.close()
 config = {
     # system settings
     "num_gpus": 1,
-    "num_workers": 3,
+    # "num_workers": 3,
+    "num_workers": 0,
     "num_envs_per_worker": NUM_ENVS_PER_WORKER,
     "num_cpus_for_driver": 1,
     "num_cpus_per_worker": 1,
