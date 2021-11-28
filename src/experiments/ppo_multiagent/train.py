@@ -1,13 +1,11 @@
 import ray
 from ray import tune
 
-from src.utils import create_custom_env
+from .utils import create_custom_env
+from .config import ENVIRONMENT_ID, config
+from .stop import stop
 
-from src.experiments.ppo_multiagent.config import ENVIRONMENT_ID, config
-from src.experiments.ppo_multiagent.stop import stop
-from src.experiments.ppo_multiagent.callback import Callback
-
-
+ 
 def run_experiment():
     ray.init(num_cpus=8, include_dashboard=False)
 
@@ -16,14 +14,15 @@ def run_experiment():
     analysis = tune.run(
         "PPO",
         num_samples=1,
-        name="PPO_multiagent_player",
+        # name="PPO_multiagent_player",
+        name="Testing_pickle",
         config=config,
         stop=stop,
-        checkpoint_freq=100,
+        checkpoint_freq=1,
         checkpoint_at_end=True,
         local_dir="./src/ray_results",
-        # callbacks=[Callback()]
         # restore="./src/ray_results/PPO_selfplay_1/PPO_Soccer_ID/checkpoint_00X/checkpoint-X",
+        # resume=True
     )
 
     # Gets best trial based on max accuracy across all training iterations.
@@ -35,7 +34,8 @@ def run_experiment():
     )
     print(best_checkpoint)
     print("Done training")
+    return analysis, best_trial, best_checkpoint
 
 
 if __name__ == "__main__":
-    run_experiment()
+    analysis, best_trial, best_checkpoint = run_experiment()

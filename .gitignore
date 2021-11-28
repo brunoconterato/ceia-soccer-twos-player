@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# brruno ignnores
+# Bruno ignores
 src/ray_results/
+**/agents/

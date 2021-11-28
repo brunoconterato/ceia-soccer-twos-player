@@ -3,7 +3,7 @@ from ray.rllib import MultiAgentEnv
 import soccer_twos
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from src.experiments.ppo_multiagent.wrapper import CustomRewardWrapper
+from .wrapper import CustomRewardWrapper
 
 class RLLibWrapper(gym.core.Wrapper, MultiAgentEnv):
     """
