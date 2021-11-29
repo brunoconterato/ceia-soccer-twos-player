@@ -21,6 +21,8 @@ min_player_position_y, max_player_position_y = - \
     7.399587631225586, 7.406457424163818
 min_ball_to_goal_avg_velocity, max_ball_to_goal_avg_velocity = - \
     -23.366606239568615, 23.749571761530724
+
+max_ball_abs_velocity = 78.25721740722656
 max_goals_one_team = -9999999
 max_goals_one_match = -9999999
 max_steps = -999999
@@ -38,7 +40,7 @@ CLIP_SPEED_REWARD_BY_SPEED_IMPORTANCE = True
 # OBS.: Este hyperparâmetro não pode ser modificado sem fazer novos testes em
 # min_ball_to_goal_avg_velocity e
 # max_ball_to_goal_avg_velocity:
-AVG_SPEED_TIMESTEPS_WINDOW = 50
+AVG_SPEED_TIMESTEPS_WINDOW = 1
 
 
 def get_center_of_goal_pos(player_id):
@@ -61,6 +63,11 @@ def calculate_ball_to_goal_scalar_velocity(player_id: int, info: Dict):
     # print(f"direction_to_center_of_goal: {direction_to_center_of_goal}")
 
     ball_velocity = info["ball_info"]["velocity"]
+
+    # global max_ball_abs_velocity
+    # if np.linalg.norm(ball_velocity) > max_ball_abs_velocity:
+    #     max_ball_abs_velocity = np.linalg.norm(ball_velocity)
+
     # print(f"ball_velocity: {ball_velocity}")
     ball_velocity_to_center_of_goal = get_scalar_projection(
         ball_velocity, direction_to_center_of_goal)
@@ -138,6 +145,9 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
         #     print(f'max_diff_reward: {max_diff_reward}')
         #     print(f'min_ball_to_goal_avg_velocity: {min_ball_to_goal_avg_velocity}')
         #     print(f'max_ball_to_goal_avg_velocity: {max_ball_to_goal_avg_velocity}')
+
+        # if done:
+        #     print(f'max_ball_abs_velocity: {max_ball_abs_velocity}')
 
         self.n_step += 1
         return obs, rewards, done, info

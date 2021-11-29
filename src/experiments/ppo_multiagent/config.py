@@ -1,10 +1,10 @@
 from soccer_twos import EnvType
 from ray import tune
-from .callback import Callback
-from .utils import create_custom_env, create_rllib_env
+from callback import Callback
+from utils import create_custom_env, create_rllib_env
 
-# NUM_ENVS_PER_WORKER = 1
-NUM_ENVS_PER_WORKER = 4
+NUM_ENVS_PER_WORKER = 1
+# NUM_ENVS_PER_WORKER = 4
 ENVIRONMENT_ID = "Soccer"
 
 ENVIRONMENT_CONFIG = {

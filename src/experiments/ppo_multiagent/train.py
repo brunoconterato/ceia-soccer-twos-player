@@ -1,9 +1,9 @@
 import ray
 from ray import tune
 
-from .utils import create_custom_env
-from .config import ENVIRONMENT_ID, config
-from .stop import stop
+from utils import create_custom_env
+from config import ENVIRONMENT_ID, config
+from stop import stop
 
  
 def run_experiment():
