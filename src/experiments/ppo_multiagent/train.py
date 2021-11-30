@@ -7,7 +7,7 @@ from stop import stop
 
  
 def run_experiment():
-    ray.init(num_cpus=8, include_dashboard=False)
+    ray.init(num_cpus=8, include_dashboard=False, ignore_reinit_error=True)
 
     tune.registry.register_env(ENVIRONMENT_ID, create_custom_env)
 
