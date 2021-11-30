@@ -5,6 +5,8 @@ from ray.rllib.env.multi_agent_env import MultiAgentEnv
 import numpy as np
 from collections import deque
 
+from callback import MAX_STEPS
+
 
 def get_scalar_projection(x, y):
     return np.dot(x, y) / np.linalg.norm(y)
@@ -34,13 +36,22 @@ max_ball_abs_avg_velocity = max(
     abs(min_ball_to_goal_avg_velocity), abs(max_ball_to_goal_avg_velocity))
 
 
-SPEED_IMPORTANCE = 1.0
+SPEED_IMPORTANCE = 1.0 / (14.0)
 CLIP_SPEED_REWARD_BY_SPEED_IMPORTANCE = True
+
+AFTER_BALL_STEP_PENALTY = 1 / MAX_STEPS #0.001
 
 # OBS.: Este hyperparâmetro não pode ser modificado sem fazer novos testes em
 # min_ball_to_goal_avg_velocity e
 # max_ball_to_goal_avg_velocity:
 AVG_SPEED_TIMESTEPS_WINDOW = 1
+
+
+def is_after_the_ball(player_id: int, player_pos: np.array, ball_pos: np.array):
+    if player_id in range(2):
+        return player_pos[0] > ball_pos[0]
+    elif player_id in [2, 3]:
+        return player_pos[0] < ball_pos[0]
 
 
 def get_center_of_goal_pos(player_id):
@@ -89,10 +100,17 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
         #     assert False
 
         if type(action) is dict:
-            rewards = {k: self._calculate_reward(
+            new_rewards = {k: self._calculate_reward(
                 rewards[k], k, info[k]) for k in info.keys()}
         else:
             raise NotImplementedError('Necessário implementar!')
+
+        if type(action) is dict:
+            splitted_rets = {k: self._calculate_reward(
+                rewards[k], k, info[k], splitted_returns=True) for k in info.keys()}
+        else:
+            raise NotImplementedError('Necessário implementar!')
+
 
         info = {
             i: {
@@ -107,6 +125,9 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
                     "team_1_goals": self.scoreboard["team_1"],
                     "episode_ended": done["__all__"],
                     "have_goals": self.scoreboard["team_0"] + self.scoreboard["team_1"] > 0,
+                    "env_reward": splitted_rets[i][0],
+                    "ball_to_goal_speed_reward": splitted_rets[i][1],
+                    "agent_position_to_ball_reward": splitted_rets[i][2],
                 }
             } for i in info.keys()
         }
@@ -150,7 +171,7 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
         #     print(f'max_ball_abs_velocity: {max_ball_abs_velocity}')
 
         self.n_step += 1
-        return obs, rewards, done, info
+        return obs, new_rewards, done, info
 
     def reset(self, **kwargs):
         obs = super().reset(**kwargs)
@@ -166,7 +187,7 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
         # print(f'max_ball_to_goal_avg_velocity: {max_ball_to_goal_avg_velocity}')
         return obs
 
-    def _calculate_reward(self, reward: float, player_id: int, info: Dict) -> float:
+    def _calculate_reward(self, reward: float, player_id: int, info: Dict, splitted_returns=False) -> float:
         # print('calculating reward')
         if reward != 0.0:
             # print('Goal was made!', reward, info)
@@ -200,10 +221,29 @@ class CustomRewardWrapper(gym.core.Wrapper, MultiAgentEnv):
         #     max_diff_reward = SPEED_IMPORTANCE * \
         #         self.last_ball_speed_mean_per_player[player_id] / \
         #         max_ball_abs_avg_velocity
+
+        ball_pos = info["ball_info"]["position"]
+        player_pos = info["player_info"]["position"]
+
+        env_reward = reward
+        ball_to_goal_speed_reward = np.clip(SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity, -SPEED_IMPORTANCE,
+                               SPEED_IMPORTANCE) if CLIP_SPEED_REWARD_BY_SPEED_IMPORTANCE else SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity
+        agent_position_to_ball_reward = is_after_the_ball(player_id, player_pos,
+                                  ball_pos) * (-AFTER_BALL_STEP_PENALTY)
+
+        if splitted_returns:
+            return (env_reward, ball_to_goal_speed_reward, agent_position_to_ball_reward)
+        return env_reward + ball_to_goal_speed_reward + agent_position_to_ball_reward
         if CLIP_SPEED_REWARD_BY_SPEED_IMPORTANCE:
             # print(reward + np.clip(SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity, -SPEED_IMPORTANCE, SPEED_IMPORTANCE))
-            return reward + np.clip(SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity, -SPEED_IMPORTANCE, SPEED_IMPORTANCE)
-        return reward + SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity
+            return reward + \
+                np.clip(SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity, -SPEED_IMPORTANCE, SPEED_IMPORTANCE) + \
+                is_after_the_ball(player_id, player_pos,
+                                  ball_pos) * AFTER_BALL_STEP_PENALTY
+        return reward + \
+            SPEED_IMPORTANCE * self.last_ball_speed_mean_per_player[player_id] / max_ball_abs_avg_velocity + \
+            is_after_the_ball(player_id, player_pos,
+                              ball_pos) * AFTER_BALL_STEP_PENALTY
 
     def _update_avg_ball_speed_to_goal(self, player_id: int, ball_speed: float):
         assert player_id in [0, 1, 2, 3]

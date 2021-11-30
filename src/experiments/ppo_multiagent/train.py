@@ -14,14 +14,14 @@ def run_experiment():
     analysis = tune.run(
         "PPO",
         num_samples=1,
-        # name="PPO_multiagent_player",
-        name="Testing_pickle",
+        name="PPO_multiagent_player_custom_rewards",
+        # name="Measuring_rewards",
         config=config,
         stop=stop,
         checkpoint_freq=1,
         checkpoint_at_end=True,
-        local_dir="./src/ray_results",
-        # restore="./src/ray_results/PPO_selfplay_1/PPO_Soccer_ID/checkpoint_00X/checkpoint-X",
+        local_dir="../../ray_results",
+        # restore="../../ray_results/PPO_selfplay_1/PPO_Soccer_ID/checkpoint_00X/checkpoint-X",
         # resume=True
     )
 
