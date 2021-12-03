@@ -18,7 +18,7 @@ def run_experiment():
         # name="Measuring_rewards",
         config=config,
         stop=stop,
-        checkpoint_freq=1,
+        checkpoint_freq=100,
         checkpoint_at_end=True,
         local_dir="../../ray_results",
         # restore="../../ray_results/PPO_selfplay_1/PPO_Soccer_ID/checkpoint_00X/checkpoint-X",

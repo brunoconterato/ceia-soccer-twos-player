@@ -111,7 +111,7 @@ def getAnalysis(experiment: str):
 def export():
     # PPO_Soccer_18d23_00000
     # /home/bruno/Workspace/soccer-tows-player/src/ray_results/Testing_env/PPO_Soccer_18d23_00000_0_2021-11-24_20-34-41/checkpoint_000500/checkpoint-500
-    analysis = getAnalysis("/home/bruno/Workspace/soccer-tows-player/src/ray_results/Testing_env")
+    analysis = getAnalysis("/home/bruno/Workspace/soccer-tows-player/src/ray_results/PPO_multiagent_player_custom_rewards")
 
     
     ALGORITHM = "PPO"
