@@ -1,5 +1,8 @@
 New experiment PPO League With Reward
-(Not Working!!)
+
+Treinado no Colab
+
+Obs.: Não conseguiu ser treinado a tempo da competição
 
 - Reward by ball velocity towards goal only last player that touched the ball;
 - Only apply this reward for effective ball moviments (above a minimum value);
