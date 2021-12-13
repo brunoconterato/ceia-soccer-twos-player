@@ -131,3 +131,4 @@ dmypy.json
 # Bruno ignores
 src/ray_results/
 **/agents/
+ray_results_copy/
